@@ -1,0 +1,584 @@
+{
+  "name": "Workflow A-Client Onboarding Start",
+  "nodes": [
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1K4eCEiPBAibYymgGkzsJy735fQ_IFaql_Ft1rWuZW1U",
+          "mode": "list",
+          "cachedResultName": "Client Onboarding DB",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1K4eCEiPBAibYymgGkzsJy735fQ_IFaql_Ft1rWuZW1U/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Clients",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1K4eCEiPBAibYymgGkzsJy735fQ_IFaql_Ft1rWuZW1U/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Email",
+              "lookupValue": "={{ $json.clientEmail }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        448,
+        0
+      ],
+      "id": "86020f17-4235-42f9-8cff-1534362ba030",
+      "name": "Lookup Existing Client",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "02g7edBqo0ZBq02x",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7193f483-6ca9-4ab2-8baf-b5627b7cbc76",
+              "name": "clientName",
+              "value": "={{ $json['Client Name'] }}",
+              "type": "string"
+            },
+            {
+              "id": "0be91d95-25a3-4afa-9e38-ec6920bab9f4",
+              "name": "clientEmail",
+              "value": "={{ $json.Email }}",
+              "type": "string"
+            },
+            {
+              "id": "77b314fa-0b9b-4db1-9a88-4225c47037f4",
+              "name": "tier",
+              "value": "={{ $json['Service Tier'] }}",
+              "type": "string"
+            },
+            {
+              "id": "8cf5f7d7-bfe7-48aa-9b7f-55ad558861e2",
+              "name": "goal",
+              "value": "={{ $json['Project Goal'] }}",
+              "type": "string"
+            },
+            {
+              "id": "db97fd17-e511-47a3-b8b1-fc0dc90b928b",
+              "name": "createdAt",
+              "value": "={{ $now }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        224,
+        0
+      ],
+      "id": "bee01164-9d02-4f93-8397-d9e2c4b01c14",
+      "name": "Normalize Signup Data"
+    },
+    {
+      "parameters": {
+        "formTitle": "Client Onboarding Form",
+        "formDescription": "Please fill this form so we can begin your onboarding.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Client Name",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Email",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Service Tier",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Basic"
+                  },
+                  {
+                    "option": "Standard"
+                  },
+                  {
+                    "option": "Premium"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Project Goal",
+              "fieldType": "textarea",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        0,
+        0
+      ],
+      "id": "c1e6c615-251f-480b-8dab-1170acf44fa9",
+      "name": "Client Signup Form",
+      "webhookId": "9ae33c1a-e753-4880-b708-c754341807e3"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "644274b8-9b26-4b44-9b27-8562525223e4",
+              "leftValue": "={{ $json.Email }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        640,
+        0
+      ],
+      "id": "a52f45a1-b59d-46ec-852e-45a0c08b6303",
+      "name": "Client Already Exists?"
+    },
+    {
+      "parameters": {
+        "sendTo": "faraharifqureshi@gmail.com",
+        "subject": "Duplicate client signup detected",
+        "message": "=Duplicate Submission Alert \n\nClient Name: {{ $json.clientName }}\nClient Email: {{ $json.clientEmail }}\nService Tier: {{ $json.tier }}\nProject Goal: {{ $json.goal }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        864,
+        -96
+      ],
+      "id": "033c3181-8838-4cfa-acd1-8dc4190ea305",
+      "name": "Duplicate Submission Alert",
+      "webhookId": "d191cffa-a267-485e-85b0-c177087bc18b",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "isGTIScxmvwBi0f0",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "folder",
+        "name": "={{ $('Normalize Signup Data').item.json.clientName }} - Onboarding",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1lll-o657UeVezjLvSzF5w3XiAgkUrC_d",
+          "mode": "list",
+          "cachedResultName": "Clients",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1lll-o657UeVezjLvSzF5w3XiAgkUrC_d"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        864,
+        96
+      ],
+      "id": "17467f4c-7efd-4687-82af-3f9f207ffd0c",
+      "name": "Create Client Folder",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "V05IQRPCLPgIC8AM",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e20d8f45-08d3-4d3d-b236-be85b139c33e",
+              "name": "clientName",
+              "value": "={{ $('Normalize Signup Data').item.json.clientName }}",
+              "type": "string"
+            },
+            {
+              "id": "51992d77-73a1-4cd0-8e65-633e969d32c1",
+              "name": "clientEmail",
+              "value": "={{ $('Normalize Signup Data').item.json.clientEmail }}",
+              "type": "string"
+            },
+            {
+              "id": "cb55b689-a323-4ee9-a219-1dc9afb8c377",
+              "name": "tier",
+              "value": "={{ $('Normalize Signup Data').item.json.tier }}",
+              "type": "string"
+            },
+            {
+              "id": "c47a500e-5f00-4fe4-84f7-f0f550f2a8a6",
+              "name": "createdAt",
+              "value": "={{ $('Normalize Signup Data').item.json.createdAt }}",
+              "type": "string"
+            },
+            {
+              "id": "00e3bf0c-9f00-400a-abcd-d2e01b61d49f",
+              "name": "status",
+              "value": "Onboarding started",
+              "type": "string"
+            },
+            {
+              "id": "f2565821-4e2a-409b-ac43-2dcbb65d3bdb",
+              "name": "brief",
+              "value": "Pending intake",
+              "type": "string"
+            },
+            {
+              "id": "7e22b470-80e9-43c7-b749-bf576ba1f6ee",
+              "name": "driveFolderUrl",
+              "value": "={{ 'https://drive.google.com/drive/folders/' + $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "495f27b7-d873-4c13-9c21-dc65c308a836",
+              "name": "goal",
+              "value": "={{ $('Normalize Signup Data').item.json.goal }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1088,
+        96
+      ],
+      "id": "4dae6fdf-d70e-4521-baac-7a2333db9920",
+      "name": "Prepare Record Data"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1K4eCEiPBAibYymgGkzsJy735fQ_IFaql_Ft1rWuZW1U",
+          "mode": "list",
+          "cachedResultName": "Client Onboarding DB",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1K4eCEiPBAibYymgGkzsJy735fQ_IFaql_Ft1rWuZW1U/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Clients",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1K4eCEiPBAibYymgGkzsJy735fQ_IFaql_Ft1rWuZW1U/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Client Name": "={{ $json.clientName }}",
+            "Email": "={{ $json.clientEmail }}",
+            "Service Tier": "={{ $json.tier }}",
+            "Project Goal": "={{ $json.goal }}",
+            "Status": "={{ $json.status }}",
+            "Notes/Brief": "={{ $json.brief }}",
+            "Drive Folder URL": "={{ $json.driveFolderUrl }}",
+            "Created At": "={{ $json.createdAt }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Client Name",
+              "displayName": "Client Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Service Tier",
+              "displayName": "Service Tier",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Project Goal",
+              "displayName": "Project Goal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Notes/Brief",
+              "displayName": "Notes/Brief",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Drive Folder URL",
+              "displayName": "Drive Folder URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Created At",
+              "displayName": "Created At",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1312,
+        96
+      ],
+      "id": "9d392036-82f2-49df-ad4b-e4125c17854e",
+      "name": "Create Client Record",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "02g7edBqo0ZBq02x",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.Email }}",
+        "subject": "Welcome! Let’s get started",
+        "emailType": "text",
+        "message": "=Hi {{ $json['Client Name'] }},  \n\nWelcome — we’re excited to get started with you. \n\nWe’ve created your onboarding record and the next step is to complete a short intake form so we can understand your project better.  \n\nPlease fill it here: http://localhost:5678/form/e4174ab7-1ac2-4dfa-b6ab-c5c35968cfac\n\nYour selected service tier: {{ $json['Service Tier'] }} \nOnce you submit the intake form, our system will prepare a brief and notify the team. \nBest regards, \nFarah",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1536,
+        96
+      ],
+      "id": "db1bc95f-af19-4450-87f9-a934a299573f",
+      "name": "Send Welcome Email",
+      "webhookId": "c2236822-3593-4b63-aa70-3e6bd0caf272",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "isGTIScxmvwBi0f0",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "faraharifqureshi@gmail.com",
+        "subject": "New client onboarding started",
+        "emailType": "text",
+        "message": "=A new client has started onboarding.\n\nName: {{ $('Normalize Signup Data').item.json.clientName }} \nEmail: {{ $('Normalize Signup Data').item.json.clientEmail }} \nTier: {{ $('Normalize Signup Data').item.json.tier }} \nGoal: {{ $('Normalize Signup Data').item.json.goal }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1760,
+        96
+      ],
+      "id": "40da66fe-c079-414b-9f86-d712957e827a",
+      "name": "Send a message",
+      "webhookId": "6def37f6-b101-4d06-911e-3ea6c9a00b02",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "isGTIScxmvwBi0f0",
+          "name": "Gmail account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Normalize Signup Data": {
+      "main": [
+        [
+          {
+            "node": "Lookup Existing Client",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Client Signup Form": {
+      "main": [
+        [
+          {
+            "node": "Normalize Signup Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lookup Existing Client": {
+      "main": [
+        [
+          {
+            "node": "Client Already Exists?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Client Already Exists?": {
+      "main": [
+        [
+          {
+            "node": "Duplicate Submission Alert",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create Client Folder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Client Folder": {
+      "main": [
+        [
+          {
+            "node": "Prepare Record Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Record Data": {
+      "main": [
+        [
+          {
+            "node": "Create Client Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Client Record": {
+      "main": [
+        [
+          {
+            "node": "Send Welcome Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Welcome Email": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "35c54da1-64a1-428a-9ec9-d9a7c12fcc7d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "47d0139414a25def0a595731e1ef68853b3fe99f058fea3c6a4c81f84227ea80"
+  },
+  "nodeGroups": [],
+  "id": "a9qwK1vi7xKpN55D",
+  "tags": []
+}

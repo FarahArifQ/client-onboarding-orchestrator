@@ -1,0 +1,436 @@
+{
+  "name": "Workflow B - Client Intake",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Client Intake",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Client Name"
+            },
+            {
+              "fieldLabel": "Email"
+            },
+            {
+              "fieldLabel": "What does success look like for this project?",
+              "fieldType": "textarea"
+            },
+            {
+              "fieldLabel": "Any must-haves or constraints?",
+              "fieldType": "textarea"
+            },
+            {
+              "fieldLabel": "Preferred communication style?"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        0,
+        0
+      ],
+      "id": "3453fc6a-1623-425e-a580-e75531a5aa47",
+      "name": "On form submission",
+      "webhookId": "e4174ab7-1ac2-4dfa-b6ab-c5c35968cfac"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4f35a707-ae59-46b6-b07f-eb299027782f",
+              "name": "clientName",
+              "value": "={{ $json['Client Name'] }}",
+              "type": "string"
+            },
+            {
+              "id": "0d3ec425-20f6-4b12-bcbd-94147a8b0e53",
+              "name": "clientEmail",
+              "value": "={{ $json.Email }}",
+              "type": "string"
+            },
+            {
+              "id": "c050a122-714e-452c-9531-e638774702ed",
+              "name": "success",
+              "value": "={{ $json['What does success look like for this project?'] }}",
+              "type": "string"
+            },
+            {
+              "id": "b5aed9f7-a2fc-4392-8af5-824050bd2d80",
+              "name": "constraints",
+              "value": "={{ $json['Any must-haves or constraints?'] }}",
+              "type": "string"
+            },
+            {
+              "id": "4980b54d-9b62-4ec2-8a62-69dc8ccc2f05",
+              "name": "communication",
+              "value": "={{ $json['Preferred communication style?'] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        224,
+        0
+      ],
+      "id": "4943ad9a-6841-441f-ad51-820afdf0d117",
+      "name": "Normalize Intake Data"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-3.8-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-3.8-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "={\n  \"contents\": [\n    {\n      \"parts\": [\n        {\n          \"text\": \"Create a concise project brief from this client onboarding information. Write one short professional paragraph that a project team can quickly understand. Do not use markdown headings or bullet points.\\n\\nClient Name: {{ $('Normalize Intake Data').item.json.clientName }}\\nSuccess looks like: {{ $('Normalize Intake Data').item.json.success }}\\nMust-haves or constraints: {{ $('Normalize Intake Data').item.json.constraints }}\\nPreferred communication style: {{ $('Normalize Intake Data').item.json.communication }}\"\n        }\n      ]\n    }\n  ]\n} {{ $json.clientName }}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        448,
+        0
+      ],
+      "id": "b87a9bc4-7b8a-43ed-b395-3dd134639201",
+      "name": "Generate Client Brief",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "pzefcqB0UNfIZDu0",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "bef1aba1-ae5d-4415-9061-2ec529af652c",
+              "name": "briefText",
+              "value": "={{ $json.content.parts[0].text }}",
+              "type": "string"
+            },
+            {
+              "id": "a004b16b-ed1d-41df-8655-67807fe8d103",
+              "name": "clientEmail",
+              "value": "={{ $('Normalize Intake Data').item.json.clientEmail }}",
+              "type": "string"
+            },
+            {
+              "id": "8ee1c01f-e9de-4526-a655-198989730e45",
+              "name": "clientName",
+              "value": "={{ $('Normalize Intake Data').item.json.clientName }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        816,
+        0
+      ],
+      "id": "fe2e305e-3a39-41fd-88bc-db78131e103b",
+      "name": "Prepare AI Brief"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1K4eCEiPBAibYymgGkzsJy735fQ_IFaql_Ft1rWuZW1U",
+          "mode": "list",
+          "cachedResultName": "Client Onboarding DB",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1K4eCEiPBAibYymgGkzsJy735fQ_IFaql_Ft1rWuZW1U/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Clients",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1K4eCEiPBAibYymgGkzsJy735fQ_IFaql_Ft1rWuZW1U/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Email",
+              "lookupValue": "={{ $json.clientEmail }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1040,
+        0
+      ],
+      "id": "764e6d64-f4b9-4622-957d-02b603b1dd78",
+      "name": "Find Client Record",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "02g7edBqo0ZBq02x",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1K4eCEiPBAibYymgGkzsJy735fQ_IFaql_Ft1rWuZW1U",
+          "mode": "list",
+          "cachedResultName": "Client Onboarding DB",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1K4eCEiPBAibYymgGkzsJy735fQ_IFaql_Ft1rWuZW1U/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Clients",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1K4eCEiPBAibYymgGkzsJy735fQ_IFaql_Ft1rWuZW1U/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status": "Intake Complete",
+            "Email": "={{ $('Normalize Intake Data').item.json.clientEmail }}",
+            "Notes/Brief": "={{ $('Prepare AI Brief').item.json.briefText }}"
+          },
+          "matchingColumns": [
+            "Email"
+          ],
+          "schema": [
+            {
+              "id": "Client Name",
+              "displayName": "Client Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Service Tier",
+              "displayName": "Service Tier",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Project Goal",
+              "displayName": "Project Goal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Notes/Brief",
+              "displayName": "Notes/Brief",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Drive Folder URL",
+              "displayName": "Drive Folder URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Created At",
+              "displayName": "Created At",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1264,
+        0
+      ],
+      "id": "e29a6fd6-155f-4730-b9ce-bc3503379187",
+      "name": "Update Client Record",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "02g7edBqo0ZBq02x",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "faraharifqureshi@gmail.com",
+        "subject": "=Client intake complete - {{ $('Normalize Intake Data').item.json.clientName }}",
+        "emailType": "text",
+        "message": "=Client onboarding intake is complete.\n\nClient: {{ $('Normalize Intake Data').item.json.clientName }}  \n\nEmail: {{ $('Normalize Intake Data').item.json.clientEmail }}  \n\nAI-generated brief:  {{ $('Prepare AI Brief').item.json.briefText }}  \n\nThe client record has been updated in Google Sheets.",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1488,
+        0
+      ],
+      "id": "36f26f0b-ee3a-4f69-b79c-ca57bc6d2251",
+      "name": "Notify Team",
+      "webhookId": "c2c9ebe3-1ec7-4ea9-9366-c91cc3be6135",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "isGTIScxmvwBi0f0",
+          "name": "Gmail account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Normalize Intake Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Intake Data": {
+      "main": [
+        [
+          {
+            "node": "Generate Client Brief",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Client Brief": {
+      "main": [
+        [
+          {
+            "node": "Prepare AI Brief",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare AI Brief": {
+      "main": [
+        [
+          {
+            "node": "Find Client Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Client Record": {
+      "main": [
+        [
+          {
+            "node": "Update Client Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Client Record": {
+      "main": [
+        [
+          {
+            "node": "Notify Team",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "9628fad8-079e-4eaa-ad13-60d59f883b6d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "47d0139414a25def0a595731e1ef68853b3fe99f058fea3c6a4c81f84227ea80"
+  },
+  "nodeGroups": [],
+  "id": "qre9KGQZbxMEesqp",
+  "tags": []
+}
